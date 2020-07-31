@@ -50,17 +50,20 @@ def pic(update,context):
          match2 = re.search(r"nasa ",text)
          res = ["regular","raw","full","small","thumb"]
          if match1:
-            text = text().split()
+            ls = text.split()
+            text = ls[1]
+            print(text)
+            print(ls)
             if len(text) == 3 and text[2] in res:
-              picUrl = getUrl("unsplash",text[2],text[1])
+              picUrl = getUrl("unsplash",ls[2],text)
             else:
-              picUrl = geturl("unsplash","regular",text[1])
+              picUrl = geturl("unsplash","regular",text)
             print(picUrl)
             print()
             context.bot.send_photo(update.effective_chat.id,picUrl)
          elif match2:
             q = text[match2.end():]
-            picUrl = geturl("nasa",text)
+            picUrl = geturl("nasa","",text)
             print(picUrl)
             print()
             context.bot.send_photo(update.effective_chat.id,picUrl)
