@@ -20,9 +20,9 @@ PORT = int(os.environ.get('PORT', 5000))
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 def start(update, context):
-       context.bot.send_message(chat_id=update.message.chat_id, text="Hlw! "+update.message.from_user.first_name+" .  I can show you many random images , just send me 'show <keyword>' or if you want images from nasa ,send nasa <keyword> ")
+       context.bot.send_message(chat_id=update.message.chat_id, text="Hlw! "+update.message.from_user.first_name+ " This bot is developed by Shubhendra  Kushwaha , I can show you many random images of relevant keyword , to see the images simply send me sho <keyword> or if you want images from gallery of NASA , send nasa <keyword> . This bot is open source anyone can contribute on GITHUB https://github.com/TheShubhendra/pic-finder-bot. If you found any bug or error , please create a issue on GITHUB")
 
-def geturl(source,keyword):
+def geturl(source,r,keyword):
        print(keyword)
        if source == "unsplash" :
          url = "https://api.unsplash.com/search/photos/?client_id="+KEY+"&query="+keyword
@@ -31,7 +31,7 @@ def geturl(source,keyword):
          res = req.json()
          ls = res["results"]
          if len(ls)>0:
-            return ls[randrange(len(ls))]["urls"]["regular"]
+            return ls[randrange(len(ls))]["urls"][r]
        elif source == "nasa" :
          url =  "https://images-api.nasa.gov/search?q="+keyword
          print(url)
@@ -48,9 +48,13 @@ def pic(update,context):
          comm = r"show "
          match1 = re.search(comm,text)
          match2 = re.search(r"nasa ",text)
+         res = ["regular","raw","full","small","thumb"]
          if match1:
-            text = text[match1.end():]
-            picUrl = geturl("unsplash",text)
+            text = text().split()
+            if len(text) == 3 and text[2] in res:
+              picUrl = getUrl("unsplash",text[2],text[1])
+            else:
+              picUrl = geturl("unsplash","regular",text[1])
             print(picUrl)
             print()
             context.bot.send_photo(update.effective_chat.id,picUrl)
