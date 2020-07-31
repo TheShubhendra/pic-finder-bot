@@ -54,7 +54,8 @@ def pic(update,context):
             text = ls[1]
             print(text)
             print(ls)
-            if len(text) == 3 and text[2] in res:
+            if len(text) == 3 and ls[2] in res:
+              print("resolution set to"+ls[2])
               picUrl = getUrl("unsplash",ls[2],text)
             else:
               picUrl = geturl("unsplash","regular",text)
