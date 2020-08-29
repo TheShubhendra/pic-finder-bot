@@ -47,11 +47,8 @@ def getNasa(keyword):
       return urls
       
 def geturl(source,keyword):
-
-
        print(keyword)
        urlList =[]
-       
        if source == "nasa" :
          urlList+=getNasa(keyword)
        else:
@@ -59,11 +56,10 @@ def geturl(source,keyword):
        print(urlList)
        if len(urlList)>0:
          return urlList[randint(0,len(urlList))];
-       
 
 def pic(update,context):
          text = update.message.text.lower()
-         if "show " in text
+         if "show " in text:
             print(text)
             keyword = text.replace("show ",'')
             picUrl = geturl("unsplash",keyword)
