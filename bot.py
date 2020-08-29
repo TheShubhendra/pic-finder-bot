@@ -20,6 +20,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 def start(update, context):
        context.bot.send_message(chat_id=update.message.chat_id, text="Hlw! "+update.message.from_user.first_name+ " This bot is developed by Shubhendra  Kushwaha , I can show you many random images of relevant keyword , to see the images simply send me show <keyword> or if you want images from gallery of NASA , send nasa <keyword> . This bot is open source anyone can contribute on GITHUB https://github.com/TheShubhendra/pic-finder-bot. If you found any bug or error , please create a issue on GITHUB")
+
 def getUnsplash(keyword):
       url = "https://api.unsplash.com/search/photos/?client_id="+KEY+"&query="+keyword
       print(url)
@@ -46,6 +47,8 @@ def getNasa(keyword):
       return urls
       
 def geturl(source,keyword):
+
+
        print(keyword)
        urlList =[]
        
@@ -60,7 +63,7 @@ def geturl(source,keyword):
 
 def pic(update,context):
          text = update.message.text.lower()
-         if "show " in text:
+         if "show " in text
             print(text)
             keyword = text.replace("show ",'')
             picUrl = geturl("unsplash",keyword)
