@@ -1,7 +1,6 @@
 
 ########  IMPORTING MODULES   ######
-from random import randrange
-import re
+from random import randint
 from requests import get
 import logging
 import os
@@ -13,7 +12,7 @@ KEY =  config("KEY")
 APP = "pic-finder-bot"
 print(KEY)
 print(TOKEN)
-PORT = int(os.environ.get('PORT', 5000))
+PORT = int(config('PORT', 5000))
 
 
 
@@ -22,49 +21,58 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 def start(update, context):
        context.bot.send_message(chat_id=update.message.chat_id, text="Hlw! "+update.message.from_user.first_name+ " This bot is developed by Shubhendra  Kushwaha , I can show you many random images of relevant keyword , to see the images simply send me show <keyword> or if you want images from gallery of NASA , send nasa <keyword> . This bot is open source anyone can contribute on GITHUB https://github.com/TheShubhendra/pic-finder-bot. If you found any bug or error , please create a issue on GITHUB")
 
-def geturl(source,r,keyword):
-       print(keyword)
-       if source == "unsplash" :
-         url = "https://api.unsplash.com/search/photos/?client_id="+KEY+"&query="+keyword
-         print(url)
-         req = get(url)
-         res = req.json()
-         ls = res["results"]
-         if len(ls)>0:
-            return ls[randrange(len(ls))]["urls"][r]
-       elif source == "nasa" :
-         url =  "https://images-api.nasa.gov/search?q="+keyword
-         print(url)
-         req = get(url)
-         res = req.json()
-         ls = res["collection"]["items"]
-         if len(ls)>0 :
-            return ls[randrange(len(ls))]["links"][0]["href"]
+def getUnsplash(keyword):
+      url = "https://api.unsplash.com/search/photos/?client_id="+KEY+"&query="+keyword
+      print(url)
+      res = get(url).json()
+      pics = res["results"]
+      urls =[]
+      for i in range(len(pics)):
+        urls.append(pics[i]["urls"]["regular"])
+      return urls
+      
+def getNasa(keyword):
+      url =  "https://images-api.nasa.gov/search?q="+keyword
+      print(url)
+      req = get(url)
+      res = req.json()
+      pics = res["collection"]["items"]
+      urls = []
+      print("len of pics : ",len(pics))
+      for i in range(len(pics)):
+        try:
+          urls.append(pics[0]["links"][0]["href"])
+        except:
+          continue
+      return urls
+      
+def geturl(source,keyword):
 
+
+       print(keyword)
+       urlList =[]
+       
+       if source == "nasa" :
+         urlList+=getNasa(keyword)
+       else:
+         urlList+=getUnsplash(keyword)
+       print(urlList)
+       if len(urlList)>0:
+         return urlList[randint(0,len(urlList))];
+       
 
 def pic(update,context):
-       if 1 or update.message.chat.type == "group":
          text = update.message.text.lower()
-         comm = r"show "
-         match1 = re.search(comm,text)
-         match2 = re.search(r"nasa ",text)
-         res = ["regular","raw","full","small","thumb"]
-         if match1:
-            ls = text.split()
-            text = ls[1]
+         if "show " in text
             print(text)
-            print(ls)
-            if len(ls) == 3 and ls[2] in res:
-              print("resolution set to"+ls[2])
-              picUrl = geturl("unsplash",ls[2],text)
-            else:
-              picUrl = geturl("unsplash","regular",text)
+            keyword = text.replace("show ",'')
+            picUrl = geturl("unsplash",keyword)
             print(picUrl)
             print()
             context.bot.send_photo(update.effective_chat.id,picUrl)
-         elif match2:
-            q = text[match2.end():]
-            picUrl = geturl("nasa","",text)
+         elif "nasa " in text:
+            keyword = text.replace("nasa ","")
+            picUrl = geturl("nasa",keyword)
             print(picUrl)
             print()
             context.bot.send_photo(update.effective_chat.id,picUrl)
@@ -85,7 +93,7 @@ def main():
 
 
     updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
-   #updater.start_polling()
+    #updater.start_polling()
     updater.idle()
 
 if __name__ == '__main__':
