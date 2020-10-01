@@ -71,7 +71,7 @@ def pic(update,context):
             picUrl = geturl("nasa",keyword)
             print(picUrl)
             print()
-            context.bot.send_photo(update.effective_chat.id,picUrl)
+            update.message.reply_photo(update.effective_chat.id,picUrl)
 
 
 def main():
