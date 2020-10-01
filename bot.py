@@ -65,13 +65,13 @@ def pic(update,context):
             picUrl = geturl("unsplash",keyword)
             print(picUrl)
             print()
-            context.bot.send_photo(update.effective_chat.id,picUrl)
+            update.message.reply_photo(picUrl)
          elif "nasa " in text:
             keyword = text.replace("nasa ","")
             picUrl = geturl("nasa",keyword)
             print(picUrl)
             print()
-            update.message.reply_photo(update.effective_chat.id,picUrl)
+            update.message.reply_photo(picUrl)
 
 
 def main():
