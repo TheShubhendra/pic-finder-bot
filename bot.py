@@ -6,14 +6,16 @@ import logging
 import os
 from telegram.ext import Updater ,CommandHandler , MessageHandler, Filters
 from decouple import config
+from pixabay import Image
 #### CONSTANTS ####
 TOKEN = config("TOKEN")
 KEY =  config("KEY")
+KEY2 = config("KEY2")
 APP = "pic-finder-bot"
 print(KEY)
 print(TOKEN)
 PORT = int(config('PORT', 5000))
-
+PB_IMAGE = Image(KEY2)
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -30,7 +32,12 @@ def getUnsplash(keyword):
       for i in range(len(pics)):
         urls.append(pics[i]["urls"]["regular"])
       return urls
-      
+def getPixabay(keyword):
+  res = PB_IMAGE.search(keyword)
+  if len(res["hits"])>0:
+    return [ hits["largeImageURL"] for h in res["hits"] ]
+  else:
+    return []
 def getNasa(keyword):
       url =  "https://images-api.nasa.gov/search?q="+keyword
       print(url)
@@ -53,6 +60,7 @@ def geturl(source,keyword):
          urlList+=getNasa(keyword)
        else:
          urlList+=getUnsplash(keyword)
+         urlList+=getPixabay(keyword)
        print(urlList)
        if len(urlList)>0:
          return urlList[randint(0,len(urlList))];
