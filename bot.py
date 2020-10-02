@@ -35,7 +35,7 @@ def getUnsplash(keyword):
 def getPixabay(keyword):
   res = PB_IMAGE.search(keyword)
   if len(res["hits"])>0:
-    return [ hits["largeImageURL"] for h in res["hits"] ]
+    return [ hits["largeImageURL"] for hits in res["hits"] ]
   else:
     return []
 def getNasa(keyword):
