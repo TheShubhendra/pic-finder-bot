@@ -77,13 +77,16 @@ def pic(update,context):
             picUrl = geturl("unsplash",keyword)
             print(picUrl)
             print()
-            update.message.reply_photo(picUrl)
+            if picUrl is not None:
+              update.message.reply_photo(picUrl)
+            else:
+              update.message.reply_text("Sorry Image related {} not found :( ".format(keyword))
          elif "nasa " in text:
             keyword = text.replace("nasa ","")
             picUrl = geturl("nasa",keyword)
             print(picUrl)
             print()
-            if pic_url is not None:
+            if picUrl is not None:
               update.message.reply_photo(picUrl)
             else:
               update.message.reply_text("Sorry Image related {} not found :( ".format(keyword))
@@ -100,12 +103,12 @@ def main():
     dispatcher.add_handler(pic_handler)
 
 
-    updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
+   #updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
 
 
-    updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
-    #updater.start_polling()
-    updater.idle()
+    #updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
+    updater.start_polling()
+    #updater.idle()
 
 if __name__ == '__main__':
     main()
