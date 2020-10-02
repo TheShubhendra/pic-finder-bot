@@ -42,7 +42,10 @@ def getNasa(keyword):
       url =  "https://images-api.nasa.gov/search?q="+keyword
       print(url)
       req = get(url)
-      res = req.json()
+      try:
+        res = req.json()
+      except:
+        return []
       pics = res["collection"]["items"]
       urls = []
       print("len of pics : ",len(pics))
@@ -64,7 +67,8 @@ def geturl(source,keyword):
        print(urlList)
        if len(urlList)>0:
          return urlList[randint(0,len(urlList))];
-
+       else:
+         None
 def pic(update,context):
          text = update.message.text.lower()
          if "show " in text:
@@ -79,7 +83,10 @@ def pic(update,context):
             picUrl = geturl("nasa",keyword)
             print(picUrl)
             print()
-            update.message.reply_photo(picUrl)
+            if pic_handler is not None:
+              update.message.reply_photo(picUrl)
+            else:
+              update.message.reply_text("Sorry Image related {} not found :( ".format(keyword))
 
 
 def main():
