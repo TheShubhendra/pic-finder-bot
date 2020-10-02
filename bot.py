@@ -4,6 +4,7 @@ import random
 from requests import get
 import logging
 import os
+import re
 from telegram.ext import Updater ,CommandHandler , MessageHandler, Filters
 from decouple import config
 from pixabay import Image
@@ -17,6 +18,7 @@ print(TOKEN)
 PORT = int(config('PORT', 5000))
 PB_IMAGE = Image(KEY2)
 DATA = dict()
+SPECIAL_QUERIES = {}
 ADMIN_CHAT_ID = int(config("ADMIN_CHAT_ID"))
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 def source(update,context):
@@ -82,6 +84,8 @@ def getNasa(keyword):
       
 def geturl(chat_id,keyword):
        print(keyword)
+       if keyword in SPECIAL_QUERIES:
+         keyword = SPECIAL_QUERIES[keyword]
        source_list =[]
        func_dict = {"unsplash":getUnsplash,"pixabay":getPixabay,"nasa":getNasa}
        if chat_id in DATA.keys() and len(DATA[chat_id])>0:
@@ -118,17 +122,17 @@ def main():
     dispatcher = updater.dispatcher
 
     start_handler = CommandHandler('start', start)
-    pic_handler = MessageHandler(Filters.text & (~ Filters.command) , pic)
+    pic_handler = MessageHandler(Filters.regex(re.compile(r'^show',re.IGNORECASE)),pic)
     source_handler = CommandHandler(["set_source_unsplash","set_source_pixabay","set_source_nasa","reset_source"],source)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(pic_handler)
     dispatcher.add_handler(source_handler)
 
-    updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
+    #updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
 
 
-    updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
-    #updater.start_polling()
+    #updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
+    updater.start_polling()
     updater.idle()
 
 if __name__ == '__main__':
