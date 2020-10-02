@@ -83,7 +83,7 @@ def pic(update,context):
             picUrl = geturl("nasa",keyword)
             print(picUrl)
             print()
-            if pic_handler is not None:
+            if pic_url is not None:
               update.message.reply_photo(picUrl)
             else:
               update.message.reply_text("Sorry Image related {} not found :( ".format(keyword))
