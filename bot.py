@@ -21,14 +21,21 @@ ADMIN_CHAT_ID = int(config("ADMIN_CHAT_ID"))
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 def source(update,context):
   text = update.message.text
+  if "@" in text:
+    text = text[:text.find("@")]
   chat_id = update.message.chat_id
   if chat_id not in DATA:
     DATA[chat_id] = []
   if text == "/reset_source":
-    DATA[chat_id] = []
+    DATA[chat_id] = ["unsplash","pixabay","nasa"]
   else:
     source = text.split("_")[2]
-    DATA[chat_id].append(source)
+    if source not in DATA[chat_id]:
+      DATA[chat_id].append(source)
+  source_elem = ""
+  for elem in DATA[chat_id]:
+    source_elem = source_elem+" "+elem
+  update.message.reply_text("Now you will receive images from {}.".format(source_elem))
   context.bot.send_message(ADMIN_CHAT_ID,str(DATA))
 def start(update, context):
        context.bot.send_message(chat_id=update.message.chat_id, text="Hlw! "+update.message.from_user.first_name+ " This bot is developed by Shubhendra  Kushwaha , I can show you many random images of relevant keyword , to see the images simply send me show <keyword> or if you want images from gallery of NASA , send nasa <keyword> . This bot is open source anyone can contribute on GITHUB https://github.com/TheShubhendra/pic-finder-bot. If you found any bug or error , please create a issue on GITHUB")
