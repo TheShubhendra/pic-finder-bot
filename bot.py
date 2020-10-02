@@ -16,10 +16,20 @@ print(KEY)
 print(TOKEN)
 PORT = int(config('PORT', 5000))
 PB_IMAGE = Image(KEY2)
-
-
+DATA = dict()
+ADMIN_CHAT_ID = int(config("ADMIN_CHAT_ID"))
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
+def source(update,context):
+  text = update.message.text
+  chat_id = update.message.chat_id
+  if chat_id not in DATA:
+    DATA[chat_id] = []
+  if text == "/reset_source":
+    DATA[chat_id] = []
+  else:
+    source = text.split("_")[2]
+    DATA[chat_id].append(source)
+  context.bot.send_message(ADMIN_CHAT_ID,str(DATA))
 def start(update, context):
        context.bot.send_message(chat_id=update.message.chat_id, text="Hlw! "+update.message.from_user.first_name+ " This bot is developed by Shubhendra  Kushwaha , I can show you many random images of relevant keyword , to see the images simply send me show <keyword> or if you want images from gallery of NASA , send nasa <keyword> . This bot is open source anyone can contribute on GITHUB https://github.com/TheShubhendra/pic-finder-bot. If you found any bug or error , please create a issue on GITHUB")
 
@@ -60,41 +70,34 @@ def getNasa(keyword):
           continue
       return urls
       
-def geturl(source,keyword):
+def geturl(chat_id,keyword):
        print(keyword)
-       urlList =[]
-       if source == "nasa" :
-         urlList+=getNasa(keyword)
+       source_list =[]
+       func_dict = {"unsplash":getUnsplash,"pixabay":getPixabay,"nasa":getNasa}
+       if chat_id in DATA.keys() and len(DATA[chat_id])>0:
+          source_list = DATA[chat_id]
        else:
-         urlList+=getUnsplash(keyword)
-         urlList+=getPixabay(keyword)
+          source_list = ["unsplash","pixabay","nasa"]
+       print(source_list)
+       source = source_list[randint(0,len(source_list)-1)]
+       urlList = func_dict[source](keyword)
        print(urlList)
        if len(urlList)>0:
          return urlList[randint(0,len(urlList)-1)];
        else:
          None
 def pic(update,context):
-         text = update.message.text.lower()
-         if "show " in text:
+            text = update.message.text.lower()
             print(text)
             keyword = text.replace("show ",'')
-            picUrl = geturl("unsplash",keyword)
+            picUrl = geturl(update.message.chat_id,keyword)
             print(picUrl)
             print()
             if picUrl is not None:
               update.message.reply_photo(picUrl)
             else:
               update.message.reply_text("Sorry Image related {} not found :( ".format(keyword))
-         elif "nasa " in text:
-            keyword = text.replace("nasa ","")
-            picUrl = geturl("nasa",keyword)
-            print(picUrl)
-            print()
-            if picUrl is not None:
-              update.message.reply_photo(picUrl)
-            else:
-              update.message.reply_text("Sorry Image related {} not found :( ".format(keyword))
-
+         
 
 def main():
     updater = Updater(token=TOKEN,use_context=True)
@@ -102,10 +105,10 @@ def main():
 
     start_handler = CommandHandler('start', start)
     pic_handler = MessageHandler(Filters.text & (~ Filters.command) , pic)
-
+    source_handler = CommandHandler(["set_source_unsplash","set_source_pixabay","set_source_nasa","reset_source"],source)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(pic_handler)
-
+    dispatcher.add_handler(source_handler)
 
     updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
 
