@@ -1,6 +1,6 @@
 
 ########  IMPORTING MODULES   ######
-from random import randint
+import random
 from requests import get
 import logging
 import os
@@ -27,14 +27,17 @@ def source(update,context):
   if chat_id not in DATA:
     DATA[chat_id] = []
   if text == "/reset_source":
-    DATA[chat_id] = ["unsplash","pixabay","nasa"]
+    DATA[chat_id] = []
   else:
     source = text.split("_")[2]
     if source not in DATA[chat_id]:
       DATA[chat_id].append(source)
   source_elem = ""
-  for elem in DATA[chat_id]:
-    source_elem = source_elem+" "+elem
+  if len(DATA[chat_id]>0):
+    for elem in DATA[chat_id]:
+      source_elem = source_elem+" "+elem
+  else:
+    source_elem = "random sources"
   update.message.reply_text("Now you will receive images from {}.".format(source_elem))
   context.bot.send_message(ADMIN_CHAT_ID,str(DATA))
 def start(update, context):
@@ -86,11 +89,15 @@ def geturl(chat_id,keyword):
        else:
           source_list = ["unsplash","pixabay","nasa"]
        print(source_list)
-       source = source_list[randint(0,len(source_list)-1)]
+       source = source_list[random.randint(0,len(source_list)-1)]
        urlList = func_dict[source](keyword)
+       if len(urlList)==0:
+         source = source_list[random.randint(0,len(source_list)-1)]
+         urlList = func_dict[source](keyword)
+         
        print(urlList)
        if len(urlList)>0:
-         return urlList[randint(0,len(urlList)-1)];
+         return urlList[random.randint(0,len(urlList)-1)];
        else:
          None
 def pic(update,context):
@@ -103,7 +110,7 @@ def pic(update,context):
             if picUrl is not None:
               update.message.reply_photo(picUrl)
             else:
-              update.message.reply_text("Sorry Image related {} not found :( ".format(keyword))
+              update.message.reply_text("Sorry {} not found :( ".format(keyword))
          
 
 def main():
