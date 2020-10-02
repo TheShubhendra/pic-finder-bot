@@ -26,11 +26,15 @@ def start(update, context):
 def getUnsplash(keyword):
       url = "https://api.unsplash.com/search/photos/?client_id="+KEY+"&query="+keyword
       print(url)
-      res = get(url).json()
-      pics = res["results"]
-      urls =[]
-      for i in range(len(pics)):
-        urls.append(pics[i]["urls"]["regular"])
+      try:
+        res = get(url).json()
+        pics = res["results"]
+      
+        urls =[]
+        for i in range(len(pics)):
+          urls.append(pics[i]["urls"]["regular"])
+      except:
+        return []
       return urls
 def getPixabay(keyword):
   res = PB_IMAGE.search(keyword)
@@ -66,7 +70,7 @@ def geturl(source,keyword):
          urlList+=getPixabay(keyword)
        print(urlList)
        if len(urlList)>0:
-         return urlList[randint(0,len(urlList))];
+         return urlList[randint(0,len(urlList)-1)];
        else:
          None
 def pic(update,context):
