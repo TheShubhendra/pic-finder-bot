@@ -128,11 +128,11 @@ def main():
     dispatcher.add_handler(pic_handler)
     dispatcher.add_handler(source_handler)
 
-    #updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
+    updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
 
 
-    #updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
-    updater.start_polling()
+    updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
+    #updater.start_polling()
     updater.idle()
 
 if __name__ == '__main__':
