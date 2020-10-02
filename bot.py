@@ -33,7 +33,7 @@ def source(update,context):
     if source not in DATA[chat_id]:
       DATA[chat_id].append(source)
   source_elem = ""
-  if len(DATA[chat_id]>0):
+  if len(DATA[chat_id])>0:
     for elem in DATA[chat_id]:
       source_elem = source_elem+" "+elem
   else:
