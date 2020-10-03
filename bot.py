@@ -8,6 +8,8 @@ import re
 from telegram.ext import Updater ,CommandHandler , MessageHandler, Filters
 from decouple import config
 from pixabay import Image
+import sys
+import json
 #### CONSTANTS ####
 TOKEN = config("TOKEN")
 KEY =  config("KEY")
@@ -21,6 +23,24 @@ DATA = dict()
 SPECIAL_QUERIES = {}
 ADMIN_CHAT_ID = int(config("ADMIN_CHAT_ID"))
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+
+def set_var(update,context):
+  global SPECIAL_QUERIES
+  if not update.message.chat_id == ADMIN_CHAT_ID:
+    return
+  else:
+    text=update.message.text[9:]
+    try:
+      print(text)
+      SPECIAL_QUERIES = json.loads(text)
+      print(SPECIAL_QUERIES)
+      update.message.reply_text(json.dumps(SPECIAL_QUERIES))
+    except:
+      update.message.reply_text("Something bad happened :(")
+
+
+
 def source(update,context):
   text = update.message.text
   if "@" in text:
@@ -84,6 +104,7 @@ def getNasa(keyword):
       
 def geturl(chat_id,keyword):
        print(keyword)
+       print(SPECIAL_QUERIES)
        if keyword in SPECIAL_QUERIES:
          keyword = SPECIAL_QUERIES[keyword]
        source_list =[]
@@ -99,7 +120,6 @@ def geturl(chat_id,keyword):
          source = source_list[random.randint(0,len(source_list)-1)]
          urlList = func_dict[source](keyword)
          
-       print(urlList)
        if len(urlList)>0:
          return urlList[random.randint(0,len(urlList)-1)];
        else:
@@ -124,16 +144,18 @@ def main():
     start_handler = CommandHandler('start', start)
     pic_handler = MessageHandler(Filters.regex(re.compile(r'^show',re.IGNORECASE)),pic)
     source_handler = CommandHandler(["set_source_unsplash","set_source_pixabay","set_source_nasa","reset_source"],source)
+    
+    variable_handler= CommandHandler("set_var",set_var)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(pic_handler)
     dispatcher.add_handler(source_handler)
-
-    updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
-
-
-    updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
-    #updater.start_polling()
-    updater.idle()
+    dispatcher.add_handler(variable_handler)
+    if len(sys.argv)>1 and sys.argv[1]=="-l":
+        updater.start_polling()
+    else:
+        updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
+        updater.bot.setWebhook("https://"+APP +".herokuapp.com/" + TOKEN)
+        updater.idle()
 
 if __name__ == '__main__':
     main()
