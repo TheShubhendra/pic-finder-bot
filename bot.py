@@ -5,7 +5,8 @@ from requests import get
 import logging
 import os
 import re
-from telegram.ext import Updater ,CommandHandler , MessageHandler, Filters
+from telegram.ext import Updater ,CommandHandler , MessageHandler, Filters, InlineQueryHandler
+from telegram import InlineQueryResultPhoto
 from decouple import config
 from pixabay import Image
 import sys
@@ -17,6 +18,7 @@ KEY2 = config("KEY2")
 APP = "pic-finder-bot"
 print(KEY)
 print(TOKEN)
+from uuid import uuid4
 PORT = int(config('PORT', 5000))
 PB_IMAGE = Image(KEY2)
 DATA = dict()
@@ -74,14 +76,14 @@ def getUnsplash(keyword):
       
         urls =[]
         for i in range(len(pics)):
-          urls.append(pics[i]["urls"]["regular"])
+          urls.append((pics[i]["urls"]["thumb"],pics[i]["urls"]["regular"]))
       except:
         return []
       return urls
 def getPixabay(keyword):
   res = PB_IMAGE.search(keyword)
   if len(res["hits"])>0:
-    return [ hits["largeImageURL"] for hits in res["hits"] ]
+    return [(hits["previewURL"], hits["largeImageURL"] ) for hits in res["hits"] ]
   else:
     return []
 def getNasa(keyword):
@@ -114,29 +116,41 @@ def geturl(chat_id,keyword):
        else:
           source_list = ["unsplash","pixabay","nasa"]
        print(source_list)
-       source = source_list[random.randint(0,len(source_list)-1)]
+       #source = source_list[random.randint(0,len(source_list)-1)]
+       source = "pixabay"
        urlList = func_dict[source](keyword)
        if len(urlList)==0:
          source = source_list[random.randint(0,len(source_list)-1)]
          urlList = func_dict[source](keyword)
-         
        if len(urlList)>0:
-         return urlList[random.randint(0,len(urlList)-1)];
+         return urlList
        else:
          None
 def pic(update,context):
             text = update.message.text.lower()
             print(text)
             keyword = text.replace("show ",'')
-            picUrl = geturl(update.message.chat_id,keyword)
+            urlList = geturl(update.message.chat_id,keyword)
+            picUrl = urlList[random.randint(0,len(urlList)-1)];
             print(picUrl)
             print()
             if picUrl is not None:
-              update.message.reply_photo(picUrl)
+              update.message.reply_photo(picUrl[1])
             else:
               update.message.reply_text("Sorry {} not found :( ".format(keyword))
-         
 
+def inline_pic(update,context):
+  query = update.inline_query.query 
+  print(query)
+  urls = geturl(update.effective_user.id, query)
+  if urls is None:
+    return
+  print("urls",urls)
+#  urls = ["https://images.unsplash.com/photo-1513789181297-6f2ec112c0bc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjE1MDkzN30"]
+  res = [InlineQueryResultPhoto(id=str(uuid4()),photo_url=regular, thumb_url=thumb) for thumb,regular in urls]
+  for i in res:
+   print(i.id)
+  update.inline_query.answer(res)
 def main():
     updater = Updater(token=TOKEN,use_context=True)
     dispatcher = updater.dispatcher
@@ -144,8 +158,10 @@ def main():
     start_handler = CommandHandler('start', start)
     pic_handler = MessageHandler(Filters.regex(re.compile(r'^show',re.IGNORECASE)),pic)
     source_handler = CommandHandler(["set_source_unsplash","set_source_pixabay","set_source_nasa","reset_source"],source)
-    
+
     variable_handler= CommandHandler("set_var",set_var)
+    inline_handler = InlineQueryHandler(inline_pic)
+    dispatcher.add_handler(inline_handler)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(pic_handler)
     dispatcher.add_handler(source_handler)
